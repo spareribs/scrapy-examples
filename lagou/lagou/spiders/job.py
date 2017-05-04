@@ -12,6 +12,7 @@ from scrapy.http import Request
 
 class JobSpider(scrapy.Spider):
     name = "job"
+    allow_domains = ['lagou.com']
     headers = {'user-agent': "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:53.0) Gecko/20100101 Firefox/53.01", }
     cookies = {"user_trace_token": "20170502200739-07d687303c1e44fa9c7f0259097266d6", }
     work_tag = "python"

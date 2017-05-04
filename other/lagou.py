@@ -29,11 +29,11 @@ for page in range(1, (int(pages) / 15 + 2)):
     response = requests.request("GET", url, headers=headers, params=querystring)
     response_body = json.loads(response.text)
     for compony in response_body["content"]["positionResult"]["result"]:
-        print "*"*40
+        print "*" * 40
         print "公司编号" + str(compony["companyId"])
         print compony["positionName"]
         print compony["workYear"]
         print compony["education"]
-        print  compony["positionId"]
-        print  compony["salary"]
-        print  compony["companyFullName"]
+        print compony["positionId"]
+        print compony["salary"]
+        print compony["companyFullName"]
