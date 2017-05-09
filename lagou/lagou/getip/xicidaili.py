@@ -71,7 +71,7 @@ class Get_ips():
 def get_ip():
     my = Get_ips(4)
     getips_list = my.main()
-    with open("iplist.txt", "w") as f:
+    with open("test_ProxiesIList.txt", "w") as f:
         for getip in getips_list:
             f.write(str(getip) + "\n")
             print getip
