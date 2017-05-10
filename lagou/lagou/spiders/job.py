@@ -8,6 +8,7 @@
 import scrapy
 import json
 from scrapy.http import Request
+from lagou.items import LagouItem
 
 
 class JobSpider(scrapy.Spider):
@@ -34,11 +35,22 @@ class JobSpider(scrapy.Spider):
     def parse(self, response):
         response_body = json.loads(response.text)
         for compony in response_body["content"]["positionResult"]["result"]:
-            print "*" * 40
-            print "公司编号" + str(compony["companyId"])
-            print compony["positionName"]
-            print compony["workYear"]
-            print compony["education"]
-            print compony["positionId"]
-            print compony["salary"]
-            print compony["companyFullName"]
+            lagouitem = LagouItem()
+            # print "*" * 40
+            # print u"公司编号" + str(compony["companyId"])
+            # print compony["positionName"]
+            # print compony["workYear"]
+            # print compony["education"]
+            # print compony["positionId"]
+            # print compony["salary"]
+            # print compony["companyFullName"]
+
+            lagouitem["company_id"] = compony["companyId"]
+            lagouitem["position_name"] = compony["positionName"]
+            lagouitem["work_year"] = compony["workYear"]
+            lagouitem["education"] = compony["education"]
+            lagouitem["position_id"] = compony["positionId"]
+            lagouitem["salary"] = compony["salary"]
+            lagouitem["cmpany_full_name"] = compony["companyFullName"]
+            print lagouitem
+            yield lagouitem
