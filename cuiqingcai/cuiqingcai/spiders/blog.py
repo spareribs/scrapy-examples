@@ -22,14 +22,16 @@ class myspider(CrawlSpider):
     count_all = 0
     url_all = []
     start_urls = ['http://cuiqingcai.com']
-    label_tags = ['爬虫', 'scrapy', 'selenium', 'selenium']
+    label_tags = ['爬虫', 'scrapy', 'selenium']
 
     rules = (
-        Rule(LinkExtractor(allow=('\d+\.html$',)), callback='parse_item', follow=True),
-        Rule(LinkExtractor(allow=('\.html',)), callback='parse_print', follow=True),
+        Rule(LinkExtractor(allow=('\d+\.html$',)), callback='parse_all', follow=True),
+        # Rule(LinkExtractor(allow=('\d+\.html$',)), callback='parse_pachong', follow=True),
+        # Rule(LinkExtractor(allow=('\.html',)), callback='parse_all', follow=True),
     )
 
-    def parse_item(self, response):
+    # 将爬虫相关的数据存入数据库
+    def parse_pachong(self, response):
         print_tag = False
         title_name = u""
         for tag in self.label_tags:
@@ -39,22 +41,17 @@ class myspider(CrawlSpider):
         if print_tag == True:
             self.count_all = self.count_all + 1
             self.url_all.append(response.url)
-            # print response.url
-            # print title
-            with open("url.txt", "a+") as f:
-                f.write("{0} {1}\n".format(response.url, title_name.encode("utf-8")))
-            f.close()
-            # print self.count_all
-            # item = CuiqingcaiItem()
-            # item['url'] = response.url
-            # item['title'] = response.xpath('//header/h1[1][@class="article-title"]/a/text()').extract()[0]
-            # return item
+            item = CuiqingcaiItem()
+            item['url'] = response.url
+            item['title'] = title_name.encode("utf-8")
+            return item
 
-    def parse_print(self, response):
-        # print(response.url)
-        with open("url_all.txt", "a+") as f:
-            f.write("{0}\n".format(response.url))
-        f.close()
-        # print self.url_all
-        # print self.count_all
-
+    # 将全站数据存入json文件
+    def parse_all(self, response):
+        title_name = None
+        if response.xpath('//header/h1[1][@class="article-title"]/a/text()').extract()[0]:
+            title_name = response.xpath('//header/h1[1][@class="article-title"]/a/text()').extract()[0]
+        item = CuiqingcaiItem()
+        item['url'] = response.url
+        item['title'] = title_name
+        return item

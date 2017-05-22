@@ -12,5 +12,6 @@ class CuiqingcaiItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
 
+
     title = scrapy.Field()  # 标题
     url = scrapy.Field()  # 页面的地址
