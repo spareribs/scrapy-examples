@@ -11,12 +11,15 @@
 """
 
 import os
+import time
 import urllib2
 from collections import deque  # deque是为了高效实现插入和删除操作的双向列表
 import httplib
 import hashlib
 from lxml import etree
 from pybloom import BloomFilter
+
+num_downloaded_pages = 0
 
 
 class CuiQingCaiBSF():
@@ -34,7 +37,7 @@ class CuiQingCaiBSF():
 
     # 记录文件（URL和计算得到的md5）
     dir_name = 'cuiqingcai/'
-    if not os.path.exists(dir_name): # 检查用于存储网页文件夹是否存在，不存在则创建
+    if not os.path.exists(dir_name):  # 检查用于存储网页文件夹是否存在，不存在则创建
         os.makedirs(dir_name)
     md5_file_name = dir_name + "md5.txt"  # 记录已经下载的md5的值
     url_file_name = dir_name + "url.txt"  # 记录已经下载的URL
@@ -93,7 +96,7 @@ class CuiQingCaiBSF():
         """
         下载当前爬取页面，
         """
-        global filename
+        global filename, num_downloaded_pages
         print "【Download】正在下载网址 {0} 当前深度为{1}".format(now_url, self.now_level)
         try:
             # 使用urllib库请求now_url地址，将页面通过read方法读取下来
@@ -107,6 +110,8 @@ class CuiQingCaiBSF():
             fo = open("{0}{1}.html".format(self.dir_name, filename), 'wb+')
             fo.write(html_page)
             fo.close()
+
+
 
         # 处理各种异常情况
         except urllib2.HTTPError, Arguments:
@@ -128,6 +133,7 @@ class CuiQingCaiBSF():
         self.md5_file.write(dumd5 + '\r\n')  # 将md5写入文件
         self.url_file.write(now_url + '\r\n')  # 将url写入文件
         self.download_bf.add(dumd5)  # 将md5加入到BloomFilter对象当中
+        num_downloaded_pages += 1  # 用于统计当前下载页面的总数
 
         # 解析页面，获取当前页面中所有的URL
         try:
@@ -162,15 +168,13 @@ class CuiQingCaiBSF():
         启动脚本的主程序
         """
 
-
-
         while True:
             # time.sleep(10)
             url = self.getQueneURL()
             if url is None:
                 break
             self.getPageContent(url)
-            print "爬取队列剩余URL数量为：{0}，备用队列剩余URL数量为：{1}".format(len(self.now_queue),len(self.bak_queue))
+            print "爬取队列剩余URL数量为：{0}，备用队列剩余URL数量为：{1}".format(len(self.now_queue), len(self.bak_queue))
 
         # 最后关闭打开的md5和rul文件
         self.md5_file.close()
@@ -178,4 +182,7 @@ class CuiQingCaiBSF():
 
 
 if __name__ == "__main__":
+    print '【Begin】---------------------------------------------------------------'
+    start_time = time.time()
     CuiQingCaiBSF("http://cuiqingcai.com/").start_crawl()
+    print '【End】下载了 {0} 个页面，花费时间 {1:.2f} 秒'.format(num_downloaded_pages, time.time() - start_time)
