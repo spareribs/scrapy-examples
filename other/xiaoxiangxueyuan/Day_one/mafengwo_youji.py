@@ -3,7 +3,7 @@
 """
 # @Time    : 2017/6/12 19:22
 # @Author  : Spareribs
-# @File    : mafengwu_youji.py
+# @File    : mafengwo_youji.py
 # @Notice  : 这是一个有针对性（特定内容）的全站爬虫
 
 
