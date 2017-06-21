@@ -185,10 +185,10 @@ def getPageContent(now_url):
 
 
 is_root_page = True  #
-threads = []
-max_threads = 100
+threads = []  # 创建一个线程池
+max_threads = 10
 
-CRAWL_DELAY = 0
+CRAWL_DELAY = 0.6
 
 print '【Begin】---------------------------------------------------------------'
 while True:
@@ -197,32 +197,32 @@ while True:
     if url is None:  # 如果url为空的时候，深度加一，并且将备用队列置换到 爬取队列
         cqcbsf.now_level += 1  # 深度加一
         for t in threads:
-            t.join()
-        if cqcbsf.now_level == cqcbsf.max_level:  # 如果深度与设定的最大深度相等，停止爬虫
+            t.join()  # join方法，等待所有线程结束以后再继续执行【等待子进程结束，再退出主进程】
+        if cqcbsf.now_level == cqcbsf.max_level:  # 如果深度与设定的最大深度相等，跳出循环，停止爬虫
             break
-        if len(cqcbsf.bak_queue) == 0:  # 如果备用队列长度为0，停止爬虫
+        if len(cqcbsf.bak_queue) == 0:  # 如果备用队列长度为0，跳出循环，停止爬虫
             break
         cqcbsf.now_queue = cqcbsf.bak_queue  # 将备用队列传递给爬取队列
         cqcbsf.bak_queue = deque()  # 重置备用队列
-        continue
+        continue  # url is None的判断作用，知道url非空才继续执行
 
     if is_root_page is True:  # 修改根目录URL的标记
         getPageContent(url)
         is_root_page = False
     else:
         while True:
-            for t in threads:  # 首先检测没有
+            for t in threads:  # 处理掉异常而终止【非存活】的进程
                 if not t.is_alive():
                     threads.remove(t)
-            if len(threads) >= max_threads:
-                time.sleep(CRAWL_DELAY)
-                continue
-            try:
+            if len(threads) >= max_threads:  # 如果当前线程大于预设值，continue不执行后面的代码，继续循环，知道小于预设值
+                # time.sleep(CRAWL_DELAY)
+                continue  # len(threads) >= max_threads的判断左右
+            try:  # 创建线程 加入线程池 并启动线程
                 t = threading.Thread(target=getPageContent, name=None, args=(url,))
-                threads.append(t)
-                t.setDaemon(True)  # 设置ctrl-c能退出thread的爬取
-                t.start()
-                time.sleep(CRAWL_DELAY)
+                threads.append(t)  # 将线程加入线程池中
+                t.setDaemon(True)  # 设置 Ctrl-C 能退出thread的爬取【不等待子进程结束，直接退出主进程】
+                t.start()  # 启动线程
+                # time.sleep(CRAWL_DELAY)
                 break
             except Exception:
                 print "【Error】: 不能启动thread"
