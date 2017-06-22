@@ -4,21 +4,26 @@
 # @Time    : 2017/6/21 20:01
 # @Author  : Spareribs
 # @File    : process_dbmanager.py
+# @Notice  : 一个用于处理数据库的类
 """
 
 import mysql.connector  # Windows pip install mysql-connector==2.1.6 2017.06.21测试可用
+from mysql.connector import pooling
 import hashlib
 from mysql.connector import errorcode
 
 
-class CrawlDatabaseManager:
-    DB_NAME = 'mfw_pro_crawl'
+class CrawlDatabaseManager(object):
+    # 定义全局变量
+    DB_USER = "root"
+    DB_PASSWORD = "root"
+    DB_PORT = "3306"
+    DB_NAME = "cqc_process_crwal"
+    SERVER_IP = "127.0.0.1"
+    TABLES_NAME = "urls"  # 在TABLES创建的命令中也有定义
 
-    SERVER_IP = 'localhost'
-
-    TABLES = {}
-    # 创建数据表的SQL命令
-    TABLES['urls'] = (
+    # 创建数据表的SQL命令，存入到一个TABLES的字典当中
+    TABLES = {'urls': (
         "CREATE TABLE `urls` ("
         "  `index` int(11) NOT NULL AUTO_INCREMENT,"  # 队列的索引
         "  `url` varchar(512) NOT NULL,"
@@ -29,56 +34,54 @@ class CrawlDatabaseManager:
         "  `done_time` timestamp NOT NULL DEFAULT 0 ON UPDATE CURRENT_TIMESTAMP,"  # update的时候更新时间
         "  PRIMARY KEY (`index`),"
         "  UNIQUE KEY `md5` (`md5`)"
-        ") ENGINE=InnoDB")
+        ") ENGINE=InnoDB"
+    )}
 
-    def __init__(self, max_num_thread):
+    def __init__(self, max_num_thread=5):
         """初始化：包括创建数据库和数据表"""
+
+        # 尝试连接数据库，如果连接不成功直接退出进程
         try:
-            cnx = mysql.connector.connect(host=self.SERVER_IP, user='root')
+            print "【Info】：尝试连接数据库 '{0}:{1}' ".format(self.SERVER_IP, self.DB_PORT)
+            cnx = mysql.connector.connect(host=self.SERVER_IP, user=self.DB_USER, password=self.DB_PASSWORD)
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                print "Something is wrong with your user name or password"
+                print "【Error】: 用户名/密码错误~~~ {0}".format(err.msg)
             elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                print "Database does not exist"
+                print "【Error】: 数据库不存在~~~ {0}".format(err.msg)
             else:
-                print 'Create Error ' + err.msg
+                print "【Error】：尝试连接数据库失败，请查看下进程（IP -> 端口 -> 服务）~~~ {0}".format(err.msg)
             exit(1)
 
+        # 设置一个操作的游标
         cursor = cnx.cursor()
 
-        # use database, create it if not exist
+        # 如果数据库不存在的情况下，创建数据库
         try:
-            cnx.database = self.DB_NAME
+            cnx.database = self.DB_NAME  # 定义游标的数据库的名字
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_BAD_DB_ERROR:
-                # 创建数据库和数据表
-                self.create_database(cursor)
-                cnx.database = self.DB_NAME
-                self.create_tables(cursor)
+                self.create_database(cursor)  # 创建数据库
+                cnx.database = self.DB_NAME  # 定义游标的数据库的名字
+                self.create_tables(cursor)  # 创建数据表
             else:
-                print err
+                print "【Error】：{0}".format(err)
                 exit(1)
         finally:
             cursor.close()
             cnx.close()
 
-        dbconfig = {
-            "database": self.DB_NAME,
-            "user": "root",
-            "host": self.SERVER_IP,
-        }
-        self.cnxpool = mysql.connector.pooling.MySQLConnectionPool(pool_name="mypool",
-                                                                   pool_size=max_num_thread,
-                                                                   **dbconfig)
+        DBCONFIG = dict(database=self.DB_NAME, user=self.DB_USER, host=self.SERVER_IP, password=self.DB_PASSWORD)
+        self.cnxpool = mysql.connector.pooling.MySQLConnectionPool(
+            pool_name="mypoola", pool_size=max_num_thread, **DBCONFIG)
 
-    # create databse
     def create_database(self, cursor):
         """创建数据库"""
-        try:
-            cursor.execute(
-                "CREATE DATABASE {} DEFAULT CHARACTER SET 'utf8'".format(self.DB_NAME))
+        try:  # 执行创建数据表的命令
+            print "【Info】：数据库[ {0} ]不存在，正在创建数据库...".format(self.DB_NAME)
+            cursor.execute("CREATE DATABASE {0} DEFAULT CHARACTER SET 'utf8'".format(self.DB_NAME))
         except mysql.connector.Error as err:
-            print "Failed creating database: {}".format(err)
+            print "【Error】：创建数据库[ {1} ]失败{0}".format(err, self.DB_NAME)
             exit(1)
 
     def create_tables(self, cursor):
@@ -88,11 +91,11 @@ class CrawlDatabaseManager:
                 cursor.execute(ddl)
             except mysql.connector.Error as err:
                 if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                    print 'create tables error ALREADY EXISTS'
+                    print '【Error】：创建表失败，表[ {0} ]已经存在~~~'.format(self.TABLES_NAME)
                 else:
-                    print 'create tables error ' + err.msg
+                    print '【Error】：创建表失败~~~ {0}'.format(err.msg)
             else:
-                print 'Tables created'
+                print '【Info】：表[ {0} ]不存在，正在创建数据表...'.format(self.TABLES_NAME)
 
     def enqueueUrl(self, url, depth):
         """将url加入到数据库中"""
@@ -105,7 +108,7 @@ class CrawlDatabaseManager:
             # 将操作提交到数据库【提交事务】
             con.commit()
         except mysql.connector.Error as err:
-            # print 'enqueueUrl() ' + err.msg
+            print 'enqueueUrl() ' + err.msg
             return
         finally:
             cursor.close()
@@ -149,3 +152,12 @@ class CrawlDatabaseManager:
         finally:
             cursor.close()
             con.close()
+
+
+if __name__ == "__main__":
+    print "初始化开始"
+    testdbmanaget = CrawlDatabaseManager()
+    print "初始化完成"
+    print "测试插入数据"
+    # testdbmanaget.enqueueUrl("http://cuiqingcai.com/", 0)
+    # print "测试读取数据"

@@ -4,7 +4,7 @@
 # @Time    : 2017/6/21 20:01
 # @Author  : Spareribs
 # @File    : process_cuiqinghua_crawl.py
-# @Notice  : 这是使用宽度优先算法BSF实现的全站爬取的爬虫-多进程
+# @Notice  : 这是使用宽度优先算法BSF实现的全站爬取的爬虫 - 多进程
 """
 import os
 import urllib2
