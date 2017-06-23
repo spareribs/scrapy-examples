@@ -8,10 +8,10 @@
 """
 
 import mysql.connector  # Windows pip install mysql-connector==2.1.6 2017.06.21测试可用
-from mysql.connector import pooling
+from mysql.connector import pooling  # 导入连接池
 import hashlib
 from mysql.connector import errorcode
-
+import time
 
 class CrawlDatabaseManager(object):
     # 定义全局变量
@@ -27,7 +27,7 @@ class CrawlDatabaseManager(object):
         "CREATE TABLE `urls` ("
         "  `index` int(11) NOT NULL AUTO_INCREMENT,"  # 队列的索引
         "  `url` varchar(512) NOT NULL,"
-        "  `md5` varchar(16) NOT NULL,"
+        "  `md5` varchar(32) NOT NULL,"
         "  `status` varchar(11) NOT NULL DEFAULT 'new',"  # {new,downloading,finish} 三种状态
         "  `depth` int(11) NOT NULL,"
         "  `queue_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,"  # update或者insert的时候更新时间
@@ -53,8 +53,7 @@ class CrawlDatabaseManager(object):
                 print "【Error】：尝试连接数据库失败，请查看下进程（IP -> 端口 -> 服务）~~~ {0}".format(err.msg)
             exit(1)
 
-        # 设置一个操作的游标
-        cursor = cnx.cursor()
+        cursor = cnx.cursor()  # 设置一个操作的游标
 
         # 如果数据库不存在的情况下，创建数据库
         try:
@@ -73,7 +72,7 @@ class CrawlDatabaseManager(object):
 
         DBCONFIG = dict(database=self.DB_NAME, user=self.DB_USER, host=self.SERVER_IP, password=self.DB_PASSWORD)
         self.cnxpool = mysql.connector.pooling.MySQLConnectionPool(
-            pool_name="mypoola", pool_size=max_num_thread, **DBCONFIG)
+            pool_name="mypoola", pool_size=max_num_thread, **DBCONFIG)  # 创建数据库连接池
 
     def create_database(self, cursor):
         """创建数据库"""
@@ -99,65 +98,89 @@ class CrawlDatabaseManager(object):
 
     def enqueueUrl(self, url, depth):
         """将url加入到数据库中"""
-        con = self.cnxpool.get_connection()
-        cursor = con.cursor()
+        con = self.cnxpool.get_connection()  # 获取连接池连接
+        cursor = con.cursor()  # 获取游标
         try:
-            add_url = ("INSERT INTO urls (url, md5, depth) VALUES (%s, %s, %s)")
-            data_url = (url, hashlib.md5(url).hexdigest(), depth)
-            cursor.execute(add_url, data_url)
-            # 将操作提交到数据库【提交事务】
-            con.commit()
+            insert_url = ("INSERT INTO urls (url, md5, depth) VALUES (%s, %s, %s)")  # SQL语句
+            insert_data_url = (url, hashlib.md5(url).hexdigest(), depth)  # SQL数据
+            cursor.execute(insert_url, insert_data_url)  # 游标执行SQL
+            con.commit()  # 将操作提交到数据库【提交事务】
         except mysql.connector.Error as err:
-            print 'enqueueUrl() ' + err.msg
+            print '【Error】：函数 enqueueUrl() 出错~~~ {0}'.format(err.msg)
             return
         finally:
-            cursor.close()
-            con.close()
+            cursor.close()  # 关闭游标
+            con.close()  # 关闭连接池连接
 
     def dequeueUrl(self):
         """将url加入到数据库中获取一个status为new的url"""
-        con = self.cnxpool.get_connection()
-        cursor = con.cursor(dictionary=True)
+        con = self.cnxpool.get_connection()  # 获取连接池连接
+        cursor = con.cursor(dictionary=True)  # 获取游标
         try:
             # 使用 select * for update 方法加入读锁并读取
             query = (
-                "SELECT `index`, `url`, `depth` FROM urls WHERE status='new' ORDER BY `index` ASC LIMIT 1 FOR UPDATE")
-            cursor.execute(query)
+                "SELECT `index`, `url`, `depth` FROM urls WHERE status='new' ORDER BY `index` ASC LIMIT 1 FOR UPDATE")  # SQL语句
+            cursor.execute(query)  # 游标执行SQL
             if cursor.rowcount is 0:
                 return None
             row = cursor.fetchone()
-            update_query = ("UPDATE urls SET `status`='downloading' WHERE `index`=%d") % (row['index'])
-            cursor.execute(update_query)
-            con.commit()
+            update_query = ("UPDATE urls SET `status`='downloading' WHERE `index`=%d") % (row['index'])  # SQL语句
+            cursor.execute(update_query)  # 游标执行SQL
+            con.commit()  # 将操作提交到数据库【提交事务】
             return row
         except mysql.connector.Error as err:
-            # print 'dequeueUrl() ' + err.msg
+            print '【Error】：函数 dequeueUrl() 出错~~~ {0}'.format(err.msg)
             return None
+        except TypeError as err:
+            print "【Error】：数据库中没有new状态的数据~~~ {0}".format(err)
         finally:
-            cursor.close()
-            con.close()
+            cursor.close()  # 关闭游标
+            con.close()  # 关闭链接
 
     def finishUrl(self, index):
         """当完成下载的时候通过行级锁将当前的url的status设置为done"""
-        con = self.cnxpool.get_connection()
-        cursor = con.cursor()
+        con = self.cnxpool.get_connection()  # 获取连接池连接
+        cursor = con.cursor()  # 获取游标
         try:
             # 更新问done的时候，系统会自动刷新数据库时间time.strftime('%Y-%m-%d %H:%M:%S')
-            update_query = ("UPDATE urls SET `status`='done' WHERE `index`=%d") % (index)
-            cursor.execute(update_query)
-            con.commit()
+            update_query = ("UPDATE urls SET `status`='done' WHERE `index`=%d") % (index)  # SQL语句
+            cursor.execute(update_query)  # 游标执行SQL
+            con.commit()  # 将操作提交到数据库【提交事务】
         except mysql.connector.Error as err:
-            # print 'finishUrl() ' + err.msg
+            print '【Error】：函数 finishUrl() 出错~~~ {0}'.format(err.msg)
             return
         finally:
-            cursor.close()
-            con.close()
+            cursor.close()  # 关闭游标
+            con.close()  # 关闭连接池连接
 
 
 if __name__ == "__main__":
-    print "初始化开始"
+    """main函数部分是测试代码，用于当前脚本的测试，其他脚本导入时不执行"""
+
+    print "********************************\nTestCase步骤一：初始化开始"
     testdbmanaget = CrawlDatabaseManager()
-    print "初始化完成"
-    print "测试插入数据"
-    # testdbmanaget.enqueueUrl("http://cuiqingcai.com/", 0)
-    # print "测试读取数据"
+    print "TestCase步骤一：初始化完成"
+
+    print "********************************\nTestCase步骤二：测试插入数据开始"
+    insert_url = "http://cuiqingcai.com/{0}".format(time.time())
+    testdbmanaget.enqueueUrl(insert_url, 0)
+    print """【info】：插入的数据为：
+         -----------------------------------------------------------------------------------------------------------------------------------------------
+         | index |                url                  |               md5                | status | depth |     queue_time      |      done_time      |
+         |-------|-------------------------------------|----------------------------------|--------|-------|---------------------|---------------------|
+         |   ?   | {0} | 7e9229e7650b1f5b58c90773433ae2bc |   new  |   0   | 2017-06-23 09:16:35 | 0000-00-00 00:00:00 |
+         -----------------------------------------------------------------------------------------------------------------------------------------------
+    """.format(insert_url)
+    print "TestCase步骤二：测试插入数据完成"
+
+    print "********************************\nTestCase步骤三：测试读取数据开始"
+    result = testdbmanaget.dequeueUrl()
+    index = result.get("index")
+    print "【info】：获取到的数据为 {0}".format(result)
+    print "【info】：前往数据库确认当前indexw为 {0} 的数据状态".format(index)
+    print "TestCase步骤三：测试读取数据完成"
+
+    print "********************************\nTestCase步骤四：测试更新数据开始"
+    testdbmanaget.finishUrl(index)
+    print "【info】：前往数据库确认当前indexw为 {0} 的数据状态".format(index)
+    print "TestCase步骤四：测试更新数据完成"
