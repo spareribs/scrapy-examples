@@ -13,7 +13,7 @@ import json
 from lxml import etree
 import httplib
 import hashlib
-from pybloomfilter import BloomFilter
+from pybloom import BloomFilter
 import thread
 import threading
 import time
@@ -26,8 +26,9 @@ request_headers = {
 }
 
 
-def getPageContent(now_url, index, depth):
-    print "【Download】正在下载网址 {0} 当前深度为{1}".format(now_url, depth)
+def getPageContent(now_url, index, now_depth):
+    print "【Download】正在下载网址 {0} 当前深度为 {1}".format(now_url, now_depth)
+    max_depth = 2  # 爬取深度
     try:
         # 使用urllib库请求now_url地址，将页面通过read方法读取下来
         req = urllib2.Request(now_url, headers=request_headers)
@@ -74,7 +75,10 @@ def getPageContent(now_url, index, depth):
                             continue
                     if val[-1] == '/':  # 过滤掉末尾的/
                         val = val[0:-1]
-                    dbmanager.enqueueUrl(val, depth + 1)  # 【dbmanager.enqueueUrl】将url加入到数据库中
+                    if now_depth + 1 == max_depth:  # 如果深度与设定的最大深度相等，不加入数据库
+                        break
+                    else:
+                        dbmanager.enqueueUrl(val, now_depth + 1)  # 【dbmanager.enqueueUrl】将url加入到数据库中
 
             except ValueError:
                 continue
@@ -83,7 +87,7 @@ def getPageContent(now_url, index, depth):
 
 
 # 实例化一个数据库操作对象（功能与queue类似），并指定指定最大的进程数
-max_num_thread = 5
+max_num_thread = 10
 dbmanager = CrawlDatabaseManager(max_num_thread)
 
 # 记录文件（存放下载的HTML页面）
@@ -100,7 +104,7 @@ threads = []  # 创建进程池
 CRAWL_DELAY = 0  # 设置超时，控制下载的速率，避免太过频繁访问目标网站,但目标网站没有这个限制
 
 while True:
-    curtask = dbmanager.dequeueUrl()  # 【dbmanager.enqueueUrl】将url加入到数据库中获取一个status为new的url
+    curtask = dbmanager.dequeueUrl()  # 【dbmanager.dequeueUrl】将url加入到数据库中获取一个status为new的url
 
     if curtask is None:
         for t in threads:  # join方法，等待所有线程结束以后再继续执行【等待子进程结束，再退出主进程】
@@ -108,7 +112,6 @@ while True:
         break
 
     # looking for an empty thread from pool to crawl
-
     if is_root_page is True:  # 修改根目录URL的标记，并抓取首页，让数据库里面有初始数据
         getPageContent(curtask['url'], curtask['index'], curtask['depth'])
         is_root_page = False
