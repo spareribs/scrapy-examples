@@ -158,12 +158,12 @@ if __name__ == "__main__":
     """main函数部分是测试代码，用于当前脚本的测试，其他脚本导入时不执行"""
 
     print "********************************\nTestCase步骤一：初始化开始"
-    testdbmanaget = CrawlDatabaseManager()
+    test_mysqlmgr = CrawlDatabaseManager()
     print "TestCase步骤一：初始化完成"
 
     print "********************************\nTestCase步骤二：测试插入数据开始"
     insert_url = "http://cuiqingcai.com/{0}".format(time.time())
-    testdbmanaget.enqueueUrl(insert_url, 0)
+    test_mysqlmgr.enqueueUrl(insert_url, 0)
     print """【info】：插入的数据为（具体以实际数据为准）：
          +-------+-------------------------------------+----------------------------------+--------+-------+---------------------+---------------------+
          | index |                url                  |               md5                | status | depth |     queue_time      |      done_time      |
@@ -174,13 +174,13 @@ if __name__ == "__main__":
     print "TestCase步骤二：测试插入数据完成"
 
     print "********************************\nTestCase步骤三：测试读取数据开始"
-    result = testdbmanaget.dequeueUrl()
+    result = test_mysqlmgr.dequeueUrl()
     index = result.get("index")
     print "【info】：获取到的数据为 {0}".format(result)
     print "【info】：前往数据库确认当前indexw为 {0} 的数据状态".format(index)
     print "TestCase步骤三：测试读取数据完成"
 
     print "********************************\nTestCase步骤四：测试更新数据开始"
-    testdbmanaget.finishUrl(index)
+    test_mysqlmgr.finishUrl(index)
     print "【info】：前往数据库确认当前indexw为 {0} 的数据状态".format(index)
     print "TestCase步骤四：测试更新数据完成"

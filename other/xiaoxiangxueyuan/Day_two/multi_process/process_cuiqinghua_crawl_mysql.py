@@ -17,7 +17,7 @@ from pybloom import BloomFilter
 import thread
 import threading
 import time
-from process_dbmanager import CrawlDatabaseManager
+from process_mysqlmgr import CrawlDatabaseManager
 from mysql.connector import errorcode
 import mysql.connector
 
@@ -41,7 +41,7 @@ def getPageContent(now_url, index, now_depth):
         fo = open("{0}{1}.html".format(dir_name, filename), 'wb+')
         fo.write(html_page)
         fo.close()
-        dbmanager.finishUrl(index)  # 【dbmanager.finishUrl】当完成下载的时候通过行级锁将当前的url的status设置为done
+        mysqlmgr.finishUrl(index)  # 【dbmanager.finishUrl】当完成下载的时候通过行级锁将当前的url的status设置为done
 
     # 处理各种异常情况
     except urllib2.HTTPError, Arguments:
@@ -78,7 +78,7 @@ def getPageContent(now_url, index, now_depth):
                     if now_depth + 1 == max_depth:  # 如果深度与设定的最大深度相等，不加入数据库
                         break
                     else:
-                        dbmanager.enqueueUrl(val, now_depth + 1)  # 【dbmanager.enqueueUrl】将url加入到数据库中
+                        mysqlmgr.enqueueUrl(val, now_depth + 1)  # 【dbmanager.enqueueUrl】将url加入到数据库中
 
             except ValueError:
                 continue
@@ -88,15 +88,15 @@ def getPageContent(now_url, index, now_depth):
 
 # 实例化一个数据库操作对象（功能与queue类似），并指定指定最大的进程数
 max_num_thread = 10
-dbmanager = CrawlDatabaseManager(max_num_thread)
+mysqlmgr = CrawlDatabaseManager(max_num_thread)
 
 # 记录文件（存放下载的HTML页面）
-dir_name = 'cuiqingcai/'
+dir_name = 'test_cuiqingcai/'
 if not os.path.exists(dir_name):  # 检查用于存储网页文件夹是否存在，不存在则创建
     os.makedirs(dir_name)
 
 # put first page into queue
-dbmanager.enqueueUrl("http://cuiqingcai.com/", 0)  # 将首页面存入数据库
+mysqlmgr.enqueueUrl("http://cuiqingcai.com/", 0)  # 将首页面存入数据库
 start_time = time.time()  # 记录开始时间爱你
 is_root_page = True  # 标记首页
 threads = []  # 创建进程池
@@ -104,7 +104,7 @@ threads = []  # 创建进程池
 CRAWL_DELAY = 0  # 设置超时，控制下载的速率，避免太过频繁访问目标网站,但目标网站没有这个限制
 
 while True:
-    curtask = dbmanager.dequeueUrl()  # 【dbmanager.dequeueUrl】将url加入到数据库中获取一个status为new的url
+    curtask = mysqlmgr.dequeueUrl()  # 【dbmanager.dequeueUrl】将url加入到数据库中获取一个status为new的url
 
     if curtask is None:
         for t in threads:  # join方法，等待所有线程结束以后再继续执行【等待子进程结束，再退出主进程】
