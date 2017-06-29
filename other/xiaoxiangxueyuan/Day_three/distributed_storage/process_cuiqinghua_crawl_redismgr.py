@@ -4,7 +4,7 @@
 # @Time    : 2017/6/28 19:21
 # @Author  : Spareribs
 # @File    : process_cuiqinghua_crawl_mongo.py
-# @Notice  : 宽度优先算法BSF实现的全站爬取的爬虫-多进程(mongo)
+# @Notice  : 宽度优先算法BSF实现的全站爬取的爬虫-多进程(mongo redis)
 """
 import os
 import urllib2
@@ -12,7 +12,7 @@ from lxml import etree
 import httplib
 import threading
 import time
-from process_mongomgr import MongoUrlManager
+from process_mongo_redismgr import MongoRedisUrlManager
 
 request_headers = {
     'user-agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36",
@@ -88,7 +88,7 @@ if not os.path.exists(dir_name):  # 检查用于存储网页文件夹是否存�
 
 # 实例化一个数据库操作对象（功能与queue类似），并指定指定最大的进程数
 max_num_thread = 10
-mongomgr = MongoUrlManager()
+mongomgr = MongoRedisUrlManager()
 
 # 将首页面存入queue(数据库)
 mongomgr.enqueueUrl("http://cuiqingcai.com/", 'new', 0)

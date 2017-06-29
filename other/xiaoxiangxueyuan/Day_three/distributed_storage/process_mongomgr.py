@@ -37,6 +37,7 @@ class MongoUrlManager:
             'done_time': datetime.utcnow(),
         }
         try:
+
             self.db.url.insert({"_id": url})  # 先插入_id
             self.db.url.update({"_id": url}, {'$set': record})  # 再根据_id更新数据
         except errors.DuplicateKeyError as err:  # 当数据库中已经存在URL的时候通过try except来捕获异常
@@ -73,3 +74,5 @@ if __name__ == "__main__":
     print test_mongomgr.dequeueUrl()
     print "设置done状态测试"
     test_mongomgr.finishUrl(url="http://cuiqingcai.com/")
+    test_mongomgr.clear()
+
