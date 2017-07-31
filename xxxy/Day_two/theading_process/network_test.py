@@ -33,7 +33,7 @@ def line_httprs():
         http_request()
     line_time_now = time.time()
     line_differ_time = line_time_now - line_time_before
-    # print "Line Http Request: {0}".format(line_differ_time)
+    print "Line Http Request: {0}".format(line_differ_time)
     return line_differ_time
 
 
@@ -55,7 +55,7 @@ def theading_httprs():
             break
     theading_time_now = time.time()
     theading_differ_time = theading_time_now - theading_time_before
-    # print "Multi - theading Http Request: {0}".format(theading_differ_time)
+    print "Multi - theading Http Request: {0}".format(theading_differ_time)
     return theading_differ_time
 
 
@@ -77,7 +77,7 @@ def process_httprs():
             break
     process_time_now = time.time()
     process_differ_time = process_time_now - process_time_before
-    # print "Multi - process Http Request: {0}".format(process_differ_time)
+    print "Multi - process Http Request: {0}".format(process_differ_time)
     return process_differ_time
 
 

@@ -14,15 +14,15 @@ from multiprocessing import Process
 
 # 定义IO密集的文件读写函数
 def write(filename):
-    f = open(filename, "w")
-    for write_item in range(5000000):
-        f.write("test——write\n")
+    with open(filename, "w") as f:
+        for write_item in range(5000000):
+            f.write("test——write\n")
     f.close()
 
 
 def read(filename):
-    f = open(filename, "r")
-    lines = f.readlines()
+    with open(filename, "r") as f:
+        lines = f.readlines()
     f.close()
 
 
@@ -93,25 +93,26 @@ def process_io_main():
 
 
 if __name__ == "__main__":
-    # 自动创建和删除文件
-    try:
-        os.remove("test_line.txt")
-        os.remove("test_theading.txt")
-        os.remove("test_process.txt")
-        time.sleep(5)
-    except WindowsError as e:
-        print e
-    line_file = open("test_line.txt", "w")
-    line_file.close()
-    theading_file = open("test_theading.txt", "w")
-    theading_file.close()
-    process_file = open("test_process.txt", "w")
-    process_file.close()
-
     line_time = 0.0
     theading_time = 0.0
     process_time = 0.0
     for item in range(3):
+        # 自动创建和删除文件
+        try:
+            time.sleep(5)
+            os.remove("test_line.txt")
+            os.remove("test_theading.txt")
+            os.remove("test_process.txt")
+            time.sleep(2)
+        except WindowsError as e:
+            print e
+        line_file = open("test_line.txt", "w")
+        line_file.close()
+        theading_file = open("test_theading.txt", "w")
+        theading_file.close()
+        process_file = open("test_process.txt", "w")
+        process_file.close()
+
         time.sleep(5)
         line_time += line_io()
         time.sleep(5)

@@ -29,7 +29,7 @@ def line_count():
         count(1, 1)
     line_time_now = time.time()
     line_differ_time = line_time_now - line_time_before
-    # print "Line CPU: {0}".format(line_differ_time)
+    print "Line CPU: {0}".format(line_differ_time)
     return line_differ_time
 
 
@@ -72,7 +72,7 @@ def process_count():
             break
     process_time_now = time.time()
     process_differ_time = process_time_now - process_time_before
-    # print "Multi - process CPU: {0}".format(process_differ_time)
+    print "Multi - process CPU: {0}".format(process_differ_time)
     return process_differ_time
 
 
