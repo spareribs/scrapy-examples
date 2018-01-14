@@ -66,13 +66,17 @@ ROBOTSTXT_OBEY = False
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     'SpareribsSpider.pipelines.SpareribsspiderPipeline': 300,
-    'scrapy.pipelines.images.ImagesPipeline': 1,
+    # 'scrapy.pipelines.images.ImagesPipeline': 1,
+    'SpareribsSpider.pipelines.ArticleImagesPipeline': 1
 }
 
 IMAGES_URLS_FIELD = "front_images_url"
 project_dir = os.path.abspath(os.path.dirname(__file__))
 IMAGES_STORE = os.path.join(project_dir, "images")
 
+# setup images size
+# IMAGES_MIN_HEIGHT = 100
+# IMAGES_MIN_WIDTH = 100
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
