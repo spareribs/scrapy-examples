@@ -2,6 +2,7 @@
 import re
 import scrapy
 from scrapy.http import Request
+from SpareribsSpider.items import JobBoleAticaleItem
 
 try:
     import urlparse
@@ -77,6 +78,8 @@ class JobboleSpider(scrapy.Spider):
         # ******************
         # use css selector *
         # ******************
+
+        article_item = JobBoleAticaleItem()
         front_images_url = response.meta.get("front_images_url", "")
         title = response.css(".entry-header h1::text").extract_first("")
         create_date = response.css("p.entry-meta-hide-on-mobile::text").extract_first("").split()[0]
@@ -93,7 +96,7 @@ class JobboleSpider(scrapy.Spider):
         if match_re:
             commonts_nums = int(match_re.group(1))
         else:
-            fav_nums = 0
+            commonts_nums = 0
 
         content = response.css("div.entry").extract_first("")
 
@@ -107,4 +110,14 @@ class JobboleSpider(scrapy.Spider):
             else:
                 tags.append(tag)
 
-        pass
+        article_item["title"] = title
+        article_item["url"] = response.url
+        article_item["tags"] = tags
+        article_item["front_images_url"] = front_images_url
+        article_item["create_date"] = create_date
+        article_item["content"] = content
+        article_item["prasise_nums"] = prasise_nums
+        article_item["fav_nums"] = fav_nums
+        article_item["commonts_nums"] = commonts_nums
+
+        yield article_item
