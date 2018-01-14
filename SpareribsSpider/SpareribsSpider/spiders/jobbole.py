@@ -112,8 +112,10 @@ class JobboleSpider(scrapy.Spider):
 
         article_item["title"] = title
         article_item["url"] = response.url
+        # article_item["url_objtct_id"] =
         article_item["tags"] = tags
-        article_item["front_images_url"] = front_images_url
+        article_item["front_images_url"] = [front_images_url]
+        # article_item["front_images_path"] =
         article_item["create_date"] = create_date
         article_item["content"] = content
         article_item["prasise_nums"] = prasise_nums
