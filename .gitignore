@@ -101,3 +101,8 @@ ENV/
 report*/
 report.py
 *.pyc
+
+# SpareribsSpider
+*.jpg
+article.json
+articleexport.json
