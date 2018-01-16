@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import scrapy
+import datetime
 from scrapy.http import Request
 from SpareribsSpider.items import JobBoleAticaleItem
 from SpareribsSpider.utils.common import get_md5
@@ -84,6 +85,10 @@ class JobboleSpider(scrapy.Spider):
         front_images_url = response.meta.get("front_images_url", "")
         title = response.css(".entry-header h1::text").extract_first("")
         create_date = response.css("p.entry-meta-hide-on-mobile::text").extract_first("").split()[0]
+        try:
+            create_date = datetime.datetime.strptime(create_date, "%Y/%m/%d").date()
+        except Exception as e:
+            create_date = datetime.datetime.now().date()
         prasise_nums = response.css("span.vote-post-up h10::text").extract_first("")
         fav_nums = response.css("span.bookmark-btn::text").extract_first("")
         match_re = re.match(".*?(\d+).*", fav_nums)
