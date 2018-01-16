@@ -7,6 +7,7 @@
 
 import codecs
 import json
+import MySQLdb
 from scrapy.pipelines.images import ImagesPipeline
 from scrapy.exporters import JsonItemExporter
 
@@ -46,6 +47,24 @@ class JsonExporterPipleline(object):
         """当Spider关闭的时候，会顺便关闭文件"""
         self.exporter.finish_exporting()
         self.file.close()
+
+
+class MysqlPipeline(object):
+    """采用同步的机制写入mysql"""
+
+    def __init__(self):
+        """"""
+        self.conn = MySQLdb.connect('127.0.0.1', 'root', 'root', 'article_spider', charset="utf8", use_unicode=True)
+        self.cursor = self.conn.cursor()
+
+    def process_item(self, item, spider):
+        """注意数据库的名字和插入的值（特别是not null的情况）"""
+        insert_sql = """
+            insert into article(title, url, create_date, fav_nums)
+            VALUES (%s, %s, %s, %s)
+        """
+        self.cursor.execute(insert_sql, (item["title"], item["url"], item["create_date"], item["fav_nums"]))
+        self.conn.commit()
 
 
 class ArticleImagesPipeline(ImagesPipeline):

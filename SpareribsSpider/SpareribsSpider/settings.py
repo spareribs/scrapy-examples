@@ -65,9 +65,10 @@ ROBOTSTXT_OBEY = False
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'SpareribsSpider.pipelines.JsonExporterPipleline': 2,
+    # 'SpareribsSpider.pipelines.JsonExporterPipleline': 2,
     # 'scrapy.pipelines.images.ImagesPipeline': 1,
-    'SpareribsSpider.pipelines.ArticleImagesPipeline': 1
+    # 'SpareribsSpider.pipelines.ArticleImagesPipeline': 1,
+    'SpareribsSpider.pipelines.MysqlPipeline': 1,
 }
 
 IMAGES_URLS_FIELD = "front_images_url"
