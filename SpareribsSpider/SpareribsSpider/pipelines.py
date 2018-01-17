@@ -8,6 +8,8 @@
 import codecs
 import json
 import MySQLdb
+import MySQLdb.cursors
+from twisted.enterprise import adbapi
 from scrapy.pipelines.images import ImagesPipeline
 from scrapy.exporters import JsonItemExporter
 
@@ -50,7 +52,9 @@ class JsonExporterPipleline(object):
 
 
 class MysqlPipeline(object):
-    """采用同步的机制写入mysql"""
+    """
+    采用同步的机制 实现插入数据到mysql
+    """
 
     def __init__(self):
         """"""
@@ -65,6 +69,53 @@ class MysqlPipeline(object):
         """
         self.cursor.execute(insert_sql, (item["title"], item["url"], item["create_date"], item["fav_nums"]))
         self.conn.commit()
+
+
+class MysqlTwistedPipline(object):
+    """
+    Twisted异步 实现插入数据到mysql
+    """
+
+    def __init__(self, dbpool):
+        self.dbpool = dbpool
+
+    @classmethod
+    def from_settings(cls, settings):
+        """获取settings文件的内容"""
+        dbparms = dict(
+            host=settings["MYSQL_HOST"],
+            db=settings["MYSQL_DBNAME"],
+            user=settings["MYSQL_USER"],
+            passwd=settings["MYSQL_PASSWORD"],
+            charset='utf8',
+            cursorclass=MySQLdb.cursors.DictCursor,
+            use_unicode=True,
+        )
+        dbpool = adbapi.ConnectionPool("MySQLdb", **dbparms)
+
+        return cls(dbpool)
+
+    def process_item(self, item, spider):
+        """使用twisted将mysql插入变成异步执行"""
+        query = self.dbpool.runInteraction(self.do_insert, item)
+        # 使用addErrback函数对query进行异常处理
+        query.addErrback(self.handle_error, item, spider)
+
+    def handle_error(self, failure, item, spider):
+        """处理异步插入的异常"""
+        print (failure)
+
+    def do_insert(self, cursor, item):
+        """
+        执行具体的插入
+        根据不同的item 构建不同的sql语句并插入到mysql中
+        其他都是固定逻辑，主要是do_insert函数逻辑不同而已
+        """
+        insert_sql = """
+                    insert into article(title, url, create_date, fav_nums)
+                    VALUES (%s, %s, %s, %s)
+                """
+        cursor.execute(insert_sql, (item["title"], item["url"], item["create_date"], item["fav_nums"]))
 
 
 class ArticleImagesPipeline(ImagesPipeline):
