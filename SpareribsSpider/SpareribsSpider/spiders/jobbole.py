@@ -78,58 +78,60 @@ class JobboleSpider(scrapy.Spider):
         #     else:
         #         tags.append(tag)
 
-        # ******************
-        # use css selector *
-        # ******************
+        # # ******************
+        # # use css selector *
+        # # ******************
+        #
+        # article_item = JobBoleAticleItem()
+        # front_image_url = response.meta.get("front_image_url", "")
+        # title = response.css(".entry-header h1::text").extract_first("")
+        # create_date = response.css("p.entry-meta-hide-on-mobile::text").extract_first("").split()[0]
+        # try:
+        #     create_date = datetime.datetime.strptime(create_date, "%Y/%m/%d").date()
+        # except Exception as e:
+        #     create_date = datetime.datetime.now().date()
+        # praise_nums = response.css("span.vote-post-up h10::text").extract_first("")
+        # fav_nums = response.css("span.bookmark-btn::text").extract_first("")
+        # match_re = re.match(".*?(\d+).*", fav_nums)
+        # if match_re:
+        #     fav_nums = int(match_re.group(1))
+        # else:
+        #     fav_nums = 0
+        #
+        # comment_nums = response.css("a[href*='#article-comment'] span::text").extract_first("")
+        # match_re = re.match(".*?(\d+).*", comment_nums)
+        # if match_re:
+        #     comment_nums = int(match_re.group(1))
+        # else:
+        #     comment_nums = 0
+        #
+        # content = response.css("div.entry").extract_first("")
+        #
+        # tag_list = response.css("p.entry-meta-hide-on-mobile a::text").extract_first("")
+        #
+        # suffix = "评论"
+        # tags = []
+        # for tag in tag_list:
+        #     if tag.encode("utf-8").strip().endswith(suffix):
+        #         break
+        #     else:
+        #         tags.append(tag)
+        #
+        # article_item["title"] = title
+        # article_item["url"] = response.url
+        # article_item["url_object_id"] = get_md5(response.url)
+        # article_item["tags"] = tags
+        # article_item["front_image_url"] = [front_image_url]
+        # # article_item["front_image_path"] = # get this varialbe in pipline
+        # article_item["create_date"] = create_date
+        # article_item["content"] = content
+        # article_item["praise_nums"] = praise_nums
+        # article_item["fav_nums"] = fav_nums
+        # article_item["comment_nums"] = comment_nums
 
-        article_item = JobBoleAticleItem()
-        front_image_url = response.meta.get("front_image_url", "")
-        title = response.css(".entry-header h1::text").extract_first("")
-        create_date = response.css("p.entry-meta-hide-on-mobile::text").extract_first("").split()[0]
-        try:
-            create_date = datetime.datetime.strptime(create_date, "%Y/%m/%d").date()
-        except Exception as e:
-            create_date = datetime.datetime.now().date()
-        praise_nums = response.css("span.vote-post-up h10::text").extract_first("")
-        fav_nums = response.css("span.bookmark-btn::text").extract_first("")
-        match_re = re.match(".*?(\d+).*", fav_nums)
-        if match_re:
-            fav_nums = int(match_re.group(1))
-        else:
-            fav_nums = 0
-
-        comment_nums = response.css("a[href*='#article-comment'] span::text").extract_first("")
-        match_re = re.match(".*?(\d+).*", comment_nums)
-        if match_re:
-            comment_nums = int(match_re.group(1))
-        else:
-            comment_nums = 0
-
-        content = response.css("div.entry").extract_first("")
-
-        tag_list = response.css("p.entry-meta-hide-on-mobile a::text").extract_first("")
-
-        suffix = "评论"
-        tags = []
-        for tag in tag_list:
-            if tag.encode("utf-8").strip().endswith(suffix):
-                break
-            else:
-                tags.append(tag)
-
-        article_item["title"] = title
-        article_item["url"] = response.url
-        article_item["url_object_id"] = get_md5(response.url)
-        article_item["tags"] = tags
-        article_item["front_image_url"] = [front_image_url]
-        # article_item["front_image_path"] = # get this varialbe in pipline
-        article_item["create_date"] = create_date
-        article_item["content"] = content
-        article_item["praise_nums"] = praise_nums
-        article_item["fav_nums"] = fav_nums
-        article_item["comment_nums"] = comment_nums
-
-        # 通过item loader加载item
+        # ************************
+        # 通过item loader加载item *
+        # ************************
         """
         1. item_loader常用的函数
         item_loader.add_css()

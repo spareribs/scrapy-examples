@@ -9,6 +9,7 @@
 # https://github.com/scrapy-plugins/scrapy-djangoitem
 
 import scrapy
+from scrapy.loader.processors import MapCompose
 
 
 class SpareribsspiderItem(scrapy.Item):
@@ -17,8 +18,17 @@ class SpareribsspiderItem(scrapy.Item):
     pass
 
 
+def add_jobbole(value):
+    return value + "-spareribs"
+
+
 class JobBoleAticleItem(scrapy.Item):
-    title = scrapy.Field()
+    """
+    使用MapCompose对数据进行预处理
+    """
+    title = scrapy.Field(
+        input_processor=MapCompose(lambda x: x + "-jobbole", add_jobbole)
+    )
     url = scrapy.Field()
     url_object_id = scrapy.Field()
     tags = scrapy.Field()
