@@ -3,7 +3,7 @@ import re
 import scrapy
 import datetime
 from scrapy.http import Request
-from SpareribsSpider.items import JobBoleAticaleItem
+from SpareribsSpider.items import JobBoleAticleItem
 from SpareribsSpider.utils.common import get_md5
 
 try:
@@ -29,7 +29,7 @@ class JobboleSpider(scrapy.Spider):
             post_url = post_node.css("::attr(href)").extract_first("")
             yield Request(
                 url=urlparse.urljoin(response.url, post_url),
-                meta={"front_images_url": urlparse.urljoin(response.url, image_url)},
+                meta={"front_image_url": urlparse.urljoin(response.url, image_url)},
                 callback=self.parse_detail
             )
 
@@ -50,16 +50,16 @@ class JobboleSpider(scrapy.Spider):
         # # ********************
         # title = response.xpath("//div[@class='entry-header']/h1/text()").extract()
         # create_date = response.xpath("//p[@class='entry-meta-hide-on-mobile']//text()").extract()[0].split()[0]
-        # prasise_nums = response.xpath("//span[contains(@class,'vote-post-up')]//text()").extract()[1]
+        # praise_nums = response.xpath("//span[contains(@class,'vote-post-up')]//text()").extract()[1]
         # fav_nums = response.xpath("//span[contains(@class,'bookmark-btn')]//text()").extract()[0]
         # match_re = re.match(".*?(\d+).*", fav_nums)
         # if match_re:
         #     fav_nums = match_re.group(1)
         #
-        # commonts_nums = response.xpath("//a[@href='#article-comment']/span//text()").extract()[0]
-        # match_re = re.match(".*?(\d+).*", commonts_nums)
+        # comment_nums = response.xpath("//a[@href='#article-comment']/span//text()").extract()[0]
+        # match_re = re.match(".*?(\d+).*", comment_nums)
         # if match_re:
-        #     commonts_nums = match_re.group(1)
+        #     comment_nums = match_re.group(1)
         #
         # content = response.xpath("//div[@class='entry']").extract()[0]
         #
@@ -81,15 +81,15 @@ class JobboleSpider(scrapy.Spider):
         # use css selector *
         # ******************
 
-        article_item = JobBoleAticaleItem()
-        front_images_url = response.meta.get("front_images_url", "")
+        article_item = JobBoleAticleItem()
+        front_image_url = response.meta.get("front_image_url", "")
         title = response.css(".entry-header h1::text").extract_first("")
         create_date = response.css("p.entry-meta-hide-on-mobile::text").extract_first("").split()[0]
         try:
             create_date = datetime.datetime.strptime(create_date, "%Y/%m/%d").date()
         except Exception as e:
             create_date = datetime.datetime.now().date()
-        prasise_nums = response.css("span.vote-post-up h10::text").extract_first("")
+        praise_nums = response.css("span.vote-post-up h10::text").extract_first("")
         fav_nums = response.css("span.bookmark-btn::text").extract_first("")
         match_re = re.match(".*?(\d+).*", fav_nums)
         if match_re:
@@ -97,12 +97,12 @@ class JobboleSpider(scrapy.Spider):
         else:
             fav_nums = 0
 
-        commonts_nums = response.css("a[href*='#article-comment'] span::text").extract_first("")
-        match_re = re.match(".*?(\d+).*", commonts_nums)
+        comment_nums = response.css("a[href*='#article-comment'] span::text").extract_first("")
+        match_re = re.match(".*?(\d+).*", comment_nums)
         if match_re:
-            commonts_nums = int(match_re.group(1))
+            comment_nums = int(match_re.group(1))
         else:
-            commonts_nums = 0
+            comment_nums = 0
 
         content = response.css("div.entry").extract_first("")
 
@@ -118,14 +118,14 @@ class JobboleSpider(scrapy.Spider):
 
         article_item["title"] = title
         article_item["url"] = response.url
-        article_item["url_objtct_id"] = get_md5(response.url)
+        article_item["url_object_id"] = get_md5(response.url)
         article_item["tags"] = tags
-        article_item["front_images_url"] = [front_images_url]
-        # article_item["front_images_path"] = # get this varialbe in pipline
+        article_item["front_image_url"] = [front_image_url]
+        # article_item["front_image_path"] = # get this varialbe in pipline
         article_item["create_date"] = create_date
         article_item["content"] = content
-        article_item["prasise_nums"] = prasise_nums
+        article_item["praise_nums"] = praise_nums
         article_item["fav_nums"] = fav_nums
-        article_item["commonts_nums"] = commonts_nums
+        article_item["comment_nums"] = comment_nums
 
         yield article_item

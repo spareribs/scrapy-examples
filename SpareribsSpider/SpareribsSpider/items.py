@@ -17,15 +17,15 @@ class SpareribsspiderItem(scrapy.Item):
     pass
 
 
-class JobBoleAticaleItem(scrapy.Item):
+class JobBoleAticleItem(scrapy.Item):
     title = scrapy.Field()
     url = scrapy.Field()
-    url_objtct_id = scrapy.Field()
+    url_object_id = scrapy.Field()
     tags = scrapy.Field()
-    front_images_url = scrapy.Field()
-    front_images_path = scrapy.Field()
+    front_image_url = scrapy.Field()
+    front_image_path = scrapy.Field()
     create_date = scrapy.Field()
     content = scrapy.Field()
-    prasise_nums = scrapy.Field()
+    praise_nums = scrapy.Field()
     fav_nums = scrapy.Field()
-    commonts_nums = scrapy.Field()
+    comment_nums = scrapy.Field()

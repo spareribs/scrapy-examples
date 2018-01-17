@@ -128,5 +128,5 @@ class ArticleImagesPipeline(ImagesPipeline):
     def item_completed(self, results, item, info):
         for ok, value in results:
             iamge_file_path = value["path"]
-        item["front_images_path"] = iamge_file_path
+        item["front_image_path"] = iamge_file_path
         return item
