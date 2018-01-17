@@ -5,6 +5,9 @@
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/items.html
 
+# scrapy-plugins：将Items转化成djangoitem，ORM机制 方便对数据的操作
+# https://github.com/scrapy-plugins/scrapy-djangoitem
+
 import scrapy
 
 
