@@ -10,6 +10,7 @@
 
 import datetime
 import scrapy
+from scrapy.loader import ItemLoader
 from scrapy.loader.processors import MapCompose, TakeFirst
 
 
@@ -28,8 +29,13 @@ def date_convert(value):
         create_date = datetime.datetime.strptime(value, "%Y/%m/%d").date()
     except Exception as e:
         create_date = datetime.datetime.now().date()
-
     return create_date
+
+
+
+class ArticleItemLoader(ItemLoader):
+    # 自定义itemloader
+    default_output_processor = TakeFirst()
 
 
 class JobBoleAticleItem(scrapy.Item):
@@ -46,7 +52,6 @@ class JobBoleAticleItem(scrapy.Item):
     front_image_path = scrapy.Field()
     create_date = scrapy.Field(
         input_processor=MapCompose(date_convert),
-        output_processor=TakeFirst()
     )
     content = scrapy.Field()
     praise_nums = scrapy.Field()

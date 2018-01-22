@@ -4,7 +4,7 @@ import scrapy
 import datetime
 from scrapy.http import Request
 from scrapy.loader import ItemLoader
-from SpareribsSpider.items import JobBoleAticleItem
+from SpareribsSpider.items import JobBoleAticleItem, ArticleItemLoader
 from SpareribsSpider.utils.common import get_md5
 
 try:
@@ -140,7 +140,7 @@ class JobboleSpider(scrapy.Spider):
         2. 默认取值都是List对象
         """
         front_image_url = response.meta.get("front_image_url", "")  # 文章封面图
-        item_loader = ItemLoader(item=JobBoleAticleItem(), response=response)
+        item_loader = ArticleItemLoader(item=JobBoleAticleItem(), response=response)
         item_loader.add_css("title", ".entry-header h1::text")
         item_loader.add_value("url", response.url)
         item_loader.add_value("url_object_id", get_md5(response.url))
