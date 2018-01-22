@@ -8,8 +8,9 @@
 # scrapy-plugins：将Items转化成djangoitem，ORM机制 方便对数据的操作
 # https://github.com/scrapy-plugins/scrapy-djangoitem
 
+import datetime
 import scrapy
-from scrapy.loader.processors import MapCompose
+from scrapy.loader.processors import MapCompose, TakeFirst
 
 
 class SpareribsspiderItem(scrapy.Item):
@@ -20,6 +21,15 @@ class SpareribsspiderItem(scrapy.Item):
 
 def add_jobbole(value):
     return value + "-spareribs"
+
+
+def date_convert(value):
+    try:
+        create_date = datetime.datetime.strptime(value, "%Y/%m/%d").date()
+    except Exception as e:
+        create_date = datetime.datetime.now().date()
+
+    return create_date
 
 
 class JobBoleAticleItem(scrapy.Item):
@@ -34,7 +44,10 @@ class JobBoleAticleItem(scrapy.Item):
     tags = scrapy.Field()
     front_image_url = scrapy.Field()
     front_image_path = scrapy.Field()
-    create_date = scrapy.Field()
+    create_date = scrapy.Field(
+        input_processor=MapCompose(date_convert),
+        output_processor=TakeFirst()
+    )
     content = scrapy.Field()
     praise_nums = scrapy.Field()
     fav_nums = scrapy.Field()
