@@ -104,12 +104,12 @@ def get_comments_count(headers, topics_id):
     :return: 返回总评论条数
     """
     url = "https://api.zsxq.com/v1.10/topics/{0}".format(topics_id)
-    print(u"{0}\n[Info]开始获取主题 ** {1} ** 所有评论数：\n{2}".format("*"*20, topics_id, url))
+    print(u"{0}\n[Info]: 开始获取 主题 ** {1} ** 所有评论数 ".format("*"*40, topics_id))
     response = requests.request("GET", url, headers=headers)
     # print(response.content)
     res_dict = json.loads(response.text)
     comments_count = res_dict.get("resp_data").get("topic").get("comments_count")
-    print("[Info]: topics_id:{0} comments_count:{1}".format(topics_id, comments_count))
+    print("[Info]: 获取完毕 主题 **{0}** 评论数为:{1}".format(topics_id, comments_count))
     return comments_count
 
 
@@ -130,12 +130,14 @@ def main():
     Datawhale知乎小组：458152115158
     Datawhale-Python基础：145841884822
     """
-    _topic_id_list = get_group_topics(headers, "555515244884")
+    _topic_id_list = get_group_topics(headers, "144415141422")
     for _topic_id in _topic_id_list:
+        # 获取评论数
+        comments_count = get_comments_count(headers, _topic_id)
+
         # 首次获取 topic_id 的数据
         create_time = get_topics_comments(headers, _topic_id)
         # 如果评论数超过30 继续获取 topic_id 的数据
-        comments_count = get_comments_count(headers, _topic_id)
         while comments_count > 30:
             create_time = get_topics_comments(headers, _topic_id, create_time)  # 第二次请求都要加create_time
             comments_count -= 30
