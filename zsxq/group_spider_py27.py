@@ -109,7 +109,7 @@ def get_comments_count(headers, topics_id):
     # print(response.content)
     res_dict = json.loads(response.text)
     comments_count = res_dict.get("resp_data").get("topic").get("comments_count")
-    print("[Info]: 获取完毕 主题 **{0}** 评论数为:{1}".format(topics_id, comments_count))
+    print("[Info]: 获取完毕 主题 ** {0} ** 评论数为:{1}".format(topics_id, comments_count))
     return comments_count
 
 
