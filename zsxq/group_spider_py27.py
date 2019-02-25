@@ -18,9 +18,9 @@ headers = {
     'accept-encoding': "gzip, deflate, br",
     'accept-language': "en,zh-CN;q=0.9,zh;q=0.8,zh-TW;q=0.7",
     # 以下内容要根据实际情况修改
-    'user-agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36",
-    'cookie': "UM_distinctid=1682b47b24e5e9-094f09f591d54c-58422116-1fa400-1682b47b253c58;"
-              "zsxq_access_token=0C9259F0-C660-EB0E-7018-D33F1C36B0B4;",
+    'user-agent': "****",
+    'cookie': "UM_distinctid=****;"
+              "zsxq_access_token=****;",
 }
 
 
