@@ -18,9 +18,9 @@ headers = {
     'accept-encoding': "gzip, deflate, br",
     'accept-language': "en,zh-CN;q=0.9,zh;q=0.8,zh-TW;q=0.7",
     # 以下内容要根据实际情况修改
-    'user-agent': "****",
-    'cookie': "UM_distinctid=****;"
-              "zsxq_access_token=****;",
+    'user-agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36",
+    'cookie': "UM_distinctid=1682b47b24e5e9-094f09f591d54c-58422116-1fa400-1682b47b253c58;"
+              "zsxq_access_token=0C9259F0-C660-EB0E-7018-D33F1C36B0B4;",
 }
 
 
@@ -33,13 +33,13 @@ def get_group_topics(headers, groups_id):
     :return: 主题ID列表
     """
     url = "https://api.zsxq.com/v1.10/groups/{0}/topics?count=20".format(groups_id)
-    print(url)
+    print(u"[Info]:开始抓取所有主题：\n{0}".format(url))
     topic_ids = []
     response = requests.request("GET", url, headers=headers)
     # print(response.content)
     res_dict = json.loads(response.text)
     topics = res_dict.get("resp_data").get("topics")
-    print(topics)
+    # print(topics)
     if topics:
         for _topic in topics:
             try:
@@ -47,6 +47,7 @@ def get_group_topics(headers, groups_id):
                 _text = _topic.get("talk").get("text")
                 topic_ids.append(topic_id)
                 # print(topic_id, _text)
+                # print(u"[Info]: {0}".format(_text))
             except AttributeError as e:
                 print(e)
     return topic_ids
@@ -65,7 +66,7 @@ def get_topics_comments(headers, topics_id, begin_time=None):
               "count=30&sort=asc&begin_time={1}".format(topics_id, begin_time)
     else:
         url = "https://api.zsxq.com/v1.10/topics/{0}/comments?count=30&sort=asc".format(topics_id)
-    print(url)
+    # print(url)
     response = requests.request("GET", url, headers=headers)
     # print(response.content)
     res_dict = json.loads(response.text)
@@ -84,9 +85,11 @@ def get_topics_comments(headers, topics_id, begin_time=None):
                 _url = urllib.unquote(urllib.unquote(re.findall(r'href="(.*?)"', _text.split("<")[1])[0]))
                 print("学号: {0} 打卡时间：{1} 链接：{2}".format(_id, _create_time, _url))
             except AttributeError as e:
-                print(e)
+                # print(e)
+                pass
             except IndexError as e:
-                print(e)
+                # print(e)
+                pass
             # except TypeError as e:
             #     print(e)
     return create_time
@@ -100,7 +103,7 @@ def get_comments_count(headers, topics_id):
     :return: 返回总评论条数
     """
     url = "https://api.zsxq.com/v1.10/topics/{0}".format(topics_id)
-    print(url)
+    print(u"{0}\n[Info]开始获取主题 ** {1} ** 所有评论数：\n{2}".format("*"*20, topics_id, url))
     response = requests.request("GET", url, headers=headers)
     # print(response.content)
     res_dict = json.loads(response.text)
@@ -130,19 +133,14 @@ def main():
     for _topic_id in _topic_id_list:
         # 首次获取 topic_id 的数据
         create_time = get_topics_comments(headers, _topic_id)
-
         # 如果评论数超过30 继续获取 topic_id 的数据
         comments_count = get_comments_count(headers, _topic_id)
         while comments_count > 30:
-            create_time = get_topics_comments(headers, _topic_id, create_time)
+            create_time = get_topics_comments(headers, _topic_id, create_time)  # 第二次请求都要加create_time
             comments_count -= 30
 
             # TODO 解决create_time编码格式的问题
 
+
 if __name__ == "__main__":
     main()
-
-    # 测试爬取主题
-    # get_topics_comments(headers, "544455541888154")
-    # 测试获取评论
-    # get_comments_count(headers, "544455541888154")
