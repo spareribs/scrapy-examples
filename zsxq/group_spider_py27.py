@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-# @Time        : 2019/2/1 00:03
+# @Time        : 2019/2/25 13:33
 # @Author      : Spareribs
 # @File        : group_spider.py
 # @Software    : PyCharm
@@ -15,14 +15,12 @@ import requests
 
 headers = {
     'accept': "application/json, text/plain, */*",
-    'origin': "https://wx.zsxq.com",
-    'x-version': "1.10.14",
-    'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
-    'x-request-id': "",
-    'referer': "https://wx.zsxq.com/dweb/",
     'accept-encoding': "gzip, deflate, br",
     'accept-language': "en,zh-CN;q=0.9,zh;q=0.8,zh-TW;q=0.7",
-    'cookie': "",
+    # 以下内容要根据实际情况修改
+    'user-agent': "****",
+    'cookie': "UM_distinctid=****;"
+              "zsxq_access_token=****;",
 }
 
 
@@ -41,7 +39,7 @@ def get_group_topics(headers, groups_id):
     # print(response.content)
     res_dict = json.loads(response.text)
     topics = res_dict.get("resp_data").get("topics")
-    # print(topics)
+    print(topics)
     if topics:
         for _topic in topics:
             try:
@@ -80,6 +78,7 @@ def get_topics_comments(headers, topics_id, begin_time=None):
                 _create_time = _comment.get("create_time")
                 create_time = _create_time
                 _text = _comment.get("text").encode("utf-8")
+                # print(_text)
                 # print(_text.split("<")[0])
                 _id = re.findall(r'[1-9]\d*', _text.split("<")[0])[0]
                 _url = urllib.unquote(urllib.unquote(re.findall(r'href="(.*?)"', _text.split("<")[1])[0]))
@@ -88,6 +87,8 @@ def get_topics_comments(headers, topics_id, begin_time=None):
                 print(e)
             except IndexError as e:
                 print(e)
+            # except TypeError as e:
+            #     print(e)
     return create_time
 
 
@@ -130,20 +131,18 @@ def main():
         # 首次获取 topic_id 的数据
         create_time = get_topics_comments(headers, _topic_id)
 
-        # # 如果评论数超过30 继续获取 topic_id 的数据
-        # comments_count = get_comments_count(headers, _topic_id)
-        # while comments_count > 30:
-        #     create_time = get_topics_comments(headers, _topic_id, create_time)
-        #     comments_count -= 30
-        #
-        #     # TODO 解决create_time编码格式的问题
+        # 如果评论数超过30 继续获取 topic_id 的数据
+        comments_count = get_comments_count(headers, _topic_id)
+        while comments_count > 30:
+            create_time = get_topics_comments(headers, _topic_id, create_time)
+            comments_count -= 30
 
-    # for topics test
-    # get_topics_comments(headers, "544455541888154")
-
-    # for comments_count test
-    # get_comments_count(headers, "544455541888154")
-
+            # TODO 解决create_time编码格式的问题
 
 if __name__ == "__main__":
     main()
+
+    # 测试爬取主题
+    # get_topics_comments(headers, "544455541888154")
+    # 测试获取评论
+    # get_comments_count(headers, "544455541888154")
