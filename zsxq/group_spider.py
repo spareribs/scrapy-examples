@@ -109,7 +109,22 @@ def get_comments_count(headers, topics_id):
 
 
 def main():
-    # group 小组ID 555515244884
+    """
+    知识星球各星球 topic_id
+    Datawhale编程: 222248421551
+    初级算法编程：822248424542
+    高级算法编程：455528252848
+    Datawhale统计学：455528252888
+    Datawhale数据挖掘：555541454184
+    Datawhale爬虫：455528252818
+    Datawhale-NLP实战：222248424811
+    Datawhale数据分析：144415141422
+    Datawhale-MySQL：822245485482
+    Datawhale数据竞赛：455528281128
+    Leetcode集训打卡：555515244884
+    Datawhale知乎小组：458152115158
+    Datawhale-Python基础：145841884822
+    """
     _topic_id_list = get_group_topics(headers, "555515244884")
     for _topic_id in _topic_id_list:
         # 首次获取 topic_id 的数据
