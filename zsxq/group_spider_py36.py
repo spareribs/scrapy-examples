@@ -18,10 +18,12 @@ headers = {
     'accept': "application/json, text/plain, */*",
     'accept-encoding': "gzip, deflate, br",
     'accept-language': "en,zh-CN;q=0.9,zh;q=0.8,zh-TW;q=0.7",
-    # 以下内容要根据实际情况修改
+    # ********************************
+    #   以下内容要根据实际情况修改
+    # ********************************
     'user-agent': "****",
-    'cookie': "UM_distinctid=****;"
-              "zsxq_access_token=****;",
+    # 将所有cookie的内容写上
+    'cookie': "UM_distinctid=****;zsxq_access_token=****;_uab_collina=****;_umdata=****;avatar_url=****;cna=****;isg=****;name=****;upload_channel=****;user_id=****;ws_address=****;"
 }
 
 
@@ -83,8 +85,8 @@ def get_topics_comments(headers, topics_id, begin_time=None):
                 # print(_text)
                 # print(_text.split("<")[0])
                 _id = re.findall(r'[1-9]\d*', _text.split("<")[0])[0]
-                _url = urllib.parse.unquote(urllib.parse.unquote(re.findall(r'href="(.*?)"', _text.split("<")[1])[0]))
-                print("学号: {0} 打卡时间：{1} 链接：{2}".format(_id, _create_time, _url))
+                _url = urllib.unquote(urllib.unquote(re.findall(r'href="(.*?)"', _text.split("<")[1])[0]))
+                print("学员编号: {0:>3} 打卡时间：{1} 链接：{2}".format(_id, _create_time, _url))
             except AttributeError as e:
                 # print(e)
                 pass
@@ -118,7 +120,8 @@ def main():
     """
     知识星球各星球 topic_id
     Datawhale编程: 222248421551
-    初级算法编程：822248424542
+    初级算法梳理：822248424542
+    初级算法梳理（二）：222248481411
     高级算法编程：455528252848
     Datawhale统计学：455528252888
     Datawhale数据挖掘：555541454184
